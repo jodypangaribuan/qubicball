@@ -10,6 +10,7 @@ import (
 	"qubicball-backend/internal/delivery/http/handler"
 	"qubicball-backend/internal/infrastructure"
 	"qubicball-backend/internal/repository"
+	"qubicball-backend/internal/seeder"
 	"qubicball-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,10 @@ func main() {
 	authUsecase := usecase.NewAuthUsecase(userRepo, timeoutContext)
 	projectUsecase := usecase.NewProjectUsecase(projectRepo, redisClient, timeoutContext)
 	taskUsecase := usecase.NewTaskUsecase(taskRepo, redisClient, timeoutContext)
+
+	// Seeding
+	log.Println("Seeding database...")
+	seeder.NewSeeder(userRepo).SeedUsers()
 
 	// Handlers
 	authHandler := &handler.AuthHandler{UserUsecase: authUsecase}

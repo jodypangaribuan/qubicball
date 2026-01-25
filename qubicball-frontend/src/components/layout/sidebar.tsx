@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, ListTodo, Users, Plus, Hash } from "lucide-react";
 import { useProjects } from "@/hooks/use-projects";
+import { useUser } from "@/hooks/use-auth";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"; // Assume this can be used here or trigger it, but Sidebar has a button "NEW PROJECT".
 // Since CreateProjectDialog is a dialog component, we might need it here or trigger global state. 
 // For now, let's just make the NEW PROJECT button trigger the dialog if we can, or just keep it as is (maybe it's a link? No it's a button).
@@ -34,12 +35,13 @@ const navItems = [
 export function Sidebar() {
     const pathname = usePathname();
     const { data: projects } = useProjects();
+    const { data: user } = useUser();
 
     return (
         <div className="w-72 border-r border-black/10 h-screen flex flex-col bg-background sticky top-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20">
             <div className="p-8 border-b border-black/10 flex items-center justify-center">
                 <Link href="/dashboard">
-                    <h1 className="text-4xl font-display font-bold tracking-tighter leading-[0.8]">
+                    <h1 className="text-3xl font-display font-bold tracking-tighter leading-[0.8]">
                         QUBIC
                         <br />
                         BALL
@@ -48,15 +50,15 @@ export function Sidebar() {
             </div>
 
             <div className="flex-1 flex flex-col p-6 gap-6 overflow-y-auto">
-                <div className="w-full">
-                    {/* This button duplicates functionality if CreateProjectDialog is used elsewhere. 
-                         Ideally wrap this button with the dialog trigger. */}
-                    <CreateProjectDialog trigger={
-                        <Button className="w-full justify-start shadow-lg hover:shadow-xl transition-all" size="lg">
-                            <Plus className="mr-2 h-4 w-4" /> NEW PROJECT
-                        </Button>
-                    } />
-                </div>
+                {user?.role !== "member" && (
+                    <div className="w-full">
+                        <CreateProjectDialog trigger={
+                            <Button className="w-full justify-start shadow-lg hover:shadow-xl transition-all" size="lg">
+                                <Plus className="mr-2 h-4 w-4" /> NEW PROJECT
+                            </Button>
+                        } />
+                    </div>
+                )}
 
                 <div className="space-y-6">
                     <div>

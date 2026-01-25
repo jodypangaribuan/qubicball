@@ -15,8 +15,8 @@ export default function DashboardPage() {
         <div className="p-12 space-y-12">
             <header className="flex items-end justify-between border-b-4 border-black pb-8">
                 <div className="space-y-2">
-                    <h1 className="text-6xl md:text-7xl font-display font-bold tracking-tighter">PROJECTS</h1>
-                    <p className="font-serif text-xl italic text-muted-foreground">"The foundation of all achievement."</p>
+                    <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tighter">PROJECTS</h1>
+                    <p className="font-serif text-lg italic text-muted-foreground">"The foundation of all achievement."</p>
                 </div>
                 <div className="hidden md:flex flex-col items-end gap-4">
                     <div className="font-mono text-xs uppercase tracking-widest text-right">
