@@ -44,14 +44,14 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                {!isLoading && projects?.data && projects.data.length === 0 && (
+                {!isLoading && projects && projects.length === 0 && (
                     <div className="col-span-full border border-dashed border-black/30 flex flex-col items-center justify-center p-12 min-h-[300px] text-center space-y-4">
                         <FolderOpen className="h-12 w-12 text-muted-foreground" />
                         <p className="font-serif text-lg text-muted-foreground">No active projects.</p>
                     </div>
                 )}
 
-                {!isLoading && projects?.data && projects.data.map((project) => (
+                {!isLoading && projects && projects.map((project) => (
                     <Link key={project.id} href={`/dashboard/projects/${project.id}`}>
                         <Card className="group hover:bg-black hover:text-white transition-colors cursor-pointer border-2 border-black h-full justify-between">
                             <CardHeader>

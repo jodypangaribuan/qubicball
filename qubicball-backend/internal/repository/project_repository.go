@@ -33,7 +33,7 @@ func (r *projectRepository) GetAll(ctx context.Context, limit, offset int) ([]do
 }
 
 func (r *projectRepository) Update(ctx context.Context, project *domain.Project) error {
-	return r.db.WithContext(ctx).Save(project).Error
+	return r.db.WithContext(ctx).Model(project).Updates(project).Error
 }
 
 func (r *projectRepository) Delete(ctx context.Context, id uint) error {

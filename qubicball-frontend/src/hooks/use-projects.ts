@@ -2,18 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Project, CreateProjectRequest, UpdateProjectRequest } from "@/types";
 
-export function useProjects(page = 1, pageSize = 10) {
+export function useProjects() {
     return useQuery({
-        queryKey: ["projects", page, pageSize],
+        queryKey: ["projects"],
         queryFn: async () => {
-            const response = await api.get<{ data: Project[], meta: any }>("/api/projects", { // Assuming paginated response
-                params: { page, page_size: pageSize },
+            // Backend supports pagination but let's fetch default first page or all if backend allows.
+            // Backend GetAll implementation uses limit/offset.
+            // Let's pass a large limit for now to simulate "Get All" behavior as sidebar needs all projects usually.
+            const response = await api.get<Project[]>("/api/projects", {
+                params: { page: 1, page_size: 100 },
             });
-            // Adjust based on actual API response structure. 
-            // Postman says: expects list? Or object? 
-            // Usually paginated APIs return { data: [], meta: {} } or just [].
-            // I'll assume standard binding. If array, it returns array.
-            // Let's assume generic response for now and type cast safely.
             return response.data;
         },
     });
@@ -21,7 +19,7 @@ export function useProjects(page = 1, pageSize = 10) {
 
 export function useProject(id: number) {
     return useQuery({
-        queryKey: ["project", id],
+        queryKey: ["projects", id],
         queryFn: async () => {
             const response = await api.get<Project>(`/api/projects/${id}`);
             return response.data;
@@ -52,9 +50,9 @@ export function useUpdateProject() {
             const response = await api.put<Project>(`/api/projects/${id}`, data);
             return response.data;
         },
-        onSuccess: (data) => {
+        onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({ queryKey: ["project", data.id] });
+            queryClient.invalidateQueries({ queryKey: ["projects", variables.id] });
         },
     });
 }

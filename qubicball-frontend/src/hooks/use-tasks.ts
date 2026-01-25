@@ -6,15 +6,10 @@ export function useTasks(projectId: number) {
     return useQuery({
         queryKey: ["tasks", projectId],
         queryFn: async () => {
-            const response = await api.get<{ data: Task[] } | Task[]>(`/api/tasks/project/${projectId}`);
-            // Normalized return
-            if ('data' in response.data && Array.isArray(response.data.data)) {
-                return response.data.data;
-            }
-            if (Array.isArray(response.data)) {
-                return response.data;
-            }
-            return [];
+            // Assuming endpoint is /tasks/project/:id
+            // Not /api/tasks... api instance handles baseURL
+            const response = await api.get<Task[]>(`/api/tasks/project/${projectId}`);
+            return response.data;
         },
         enabled: !!projectId,
     });
@@ -30,7 +25,7 @@ export function useCreateTask() {
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["tasks", variables.project_id] });
-            queryClient.invalidateQueries({ queryKey: ["projects"] }); // Update counts
+            queryClient.invalidateQueries({ queryKey: ["projects"] }); // Update counts if applicable
         },
     });
 }
@@ -44,8 +39,6 @@ export function useUpdateTask() {
             return response.data;
         },
         onSuccess: (data) => {
-            // We need project_id to invalidate list properly if we don't have it in data response
-            // Ideally response returns the task.
             queryClient.invalidateQueries({ queryKey: ["tasks", data.project_id] });
         },
     });
@@ -61,5 +54,17 @@ export function useDeleteTask() {
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["tasks", variables.projectId] });
         },
+    });
+}
+
+export function useTasksByAssignee(assigneeId: number | undefined) {
+    return useQuery({
+        queryKey: ["tasks", "assignee", assigneeId],
+        queryFn: async () => {
+            if (!assigneeId) return [];
+            const response = await api.get<Task[]>(`/api/tasks/assignee/${assigneeId}`);
+            return response.data;
+        },
+        enabled: !!assigneeId,
     });
 }

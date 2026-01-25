@@ -87,3 +87,9 @@ func (u *authUsecase) GetProfile(c context.Context, id uint) (*domain.User, erro
 
 	return u.userRepo.GetByID(ctx, id)
 }
+func (u *authUsecase) GetAllUsers(c context.Context) ([]domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	return u.userRepo.GetAll(ctx)
+}

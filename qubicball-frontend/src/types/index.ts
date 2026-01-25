@@ -44,7 +44,7 @@ export interface UpdateProjectRequest {
     description?: string;
 }
 
-export type TaskStatus = "todo" | "in_progress" | "done";
+export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Overdue";
 
 export interface Task {
     id: number;
@@ -74,4 +74,5 @@ export interface UpdateTaskRequest {
     status?: TaskStatus;
     due_date?: string;
     assignee_id?: number;
+    project_id?: number;
 }

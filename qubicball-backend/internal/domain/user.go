@@ -30,10 +30,12 @@ type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByID(ctx context.Context, id uint) (*User, error)
+	GetAll(ctx context.Context) ([]User, error)
 }
 
 type UserUsecase interface {
 	Register(ctx context.Context, user *User) error
 	Login(ctx context.Context, email, password string) (string, error)
 	GetProfile(ctx context.Context, id uint) (*User, error)
+	GetAllUsers(ctx context.Context) ([]User, error)
 }

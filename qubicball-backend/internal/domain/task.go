@@ -38,6 +38,7 @@ type TaskRepository interface {
 	Update(ctx context.Context, task *Task) error
 	Delete(ctx context.Context, id uint) error
 	GetOverdueTasks(ctx context.Context) ([]Task, error)
+	GetByAssigneeID(ctx context.Context, assigneeID uint) ([]Task, error)
 }
 
 type TaskUsecase interface {
@@ -47,4 +48,5 @@ type TaskUsecase interface {
 	Update(ctx context.Context, task *Task) error
 	Delete(ctx context.Context, id uint) error
 	MarkOverdueTasks(ctx context.Context) error
+	GetByAssigneeID(ctx context.Context, assigneeID uint) ([]Task, error)
 }

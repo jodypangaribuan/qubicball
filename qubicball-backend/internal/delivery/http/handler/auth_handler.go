@@ -25,6 +25,11 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
+	// Default role to member if not provided
+	if req.Role == "" {
+		req.Role = domain.RoleMember
+	}
+
 	user := domain.User{
 		Name:     req.Name,
 		Email:    req.Email,
@@ -69,4 +74,13 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+func (h *AuthHandler) GetAll(c *gin.Context) {
+	users, err := h.UserUsecase.GetAllUsers(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
 }

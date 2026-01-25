@@ -22,12 +22,23 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
-	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
-	return &user, err
+	result := r.db.WithContext(ctx).Where("email = ?", email).Limit(1).Find(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &user, nil
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id uint) (*domain.User, error) {
 	var user domain.User
 	err := r.db.WithContext(ctx).First(&user, id).Error
 	return &user, err
+}
+func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
+	var users []domain.User
+	err := r.db.WithContext(ctx).Find(&users).Error
+	return users, err
 }

@@ -104,20 +104,21 @@ func (u *taskUsecase) MarkOverdueTasks(c context.Context) error {
 	}
 
 	for _, task := range tasks {
-		// This should be optimized to batch update or similar, but for logic demonstration:
-		// Actually, GetOverdueTasks returns tasks that are overdue but NOT marked as such?
-		// "Auto-mark overdue tasks" suggests we need to change status? Or maybe just flag them.
-		// Assuming we don't change status "Not Started" -> "Overdue" since "Overdue" isn't a status.
-		// But if we interpret "Auto-mark" as maybe adding a flag or changing status if status enum supported it.
-		// Since TaskStatus enum is NotStarted, InProgress, Completed.
-		// I will just log for now or maybe we should invalid cache if something changed.
-		// If the requirement means changing status to "Overdue", I should add that status.
-		// Let's assume we just leave it for now, user didn't specify "Overdue" status in enum.
-		// "Task status: Not Started, In Progress, Completed" - so no Overdue status.
-		// Maybe just log or send notification?
-		// "Auto-mark overdue tasks" - usually implies db update.
-		// Iterate and print for now.
-		_ = task
+		task.Status = domain.TaskStatusOverdue
+		if err := u.taskRepo.Update(ctx, &task); err != nil {
+			// Log error but continue
+			fmt.Printf("Failed to update overdue task %d: %v\n", task.ID, err)
+			continue
+		}
+		// Invalidate cache for the project
+		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", task.ProjectID))
 	}
 	return nil
+}
+
+func (u *taskUsecase) GetByAssigneeID(c context.Context, assigneeID uint) ([]domain.Task, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	return u.taskRepo.GetByAssigneeID(ctx, assigneeID)
 }

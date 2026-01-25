@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/layout/header";
 import { useUser } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -10,13 +11,11 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { data: user, isLoading, isError } = useUser();
+    const { data: user, isLoading } = useUser();
     const router = useRouter();
 
     useEffect(() => {
         if (!isLoading && !user) {
-            // Double check token existence or error
-            // Ideally useUser returns null if no token.
             router.push("/login");
         }
     }, [user, isLoading, router]);
@@ -29,17 +28,23 @@ export default function DashboardLayout({
         );
     }
 
-    if (!user) {
-        return null; // Will redirect
-    }
+    if (!user) return null;
 
     return (
-        <div className="min-h-screen flex bg-background max-w-7xl mx-auto border-r border-l border-black shadow-[20px_0_40px_rgba(0,0,0,0.05)]">
-            {/* Container constrained to max-w-7xl for "Editorial" feel, centered */}
+        <div className="min-h-screen flex bg-background">
+            {/* Sidebar - Fixed width */}
             <Sidebar />
-            <main className="flex-1 min-w-0 overflow-y-auto">
-                {children}
-            </main>
+
+            {/* Main Content Area - Flex Column */}
+            <div className="flex-1 flex flex-col min-w-0 bg-[#FAFAFA]"> {/* Light gray background for content area distinction */}
+                <Header />
+
+                <main className="flex-1 overflow-y-auto p-8 lg:p-12">
+                    <div className="max-w-7xl mx-auto w-full">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }

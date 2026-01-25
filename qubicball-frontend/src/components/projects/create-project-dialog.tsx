@@ -25,7 +25,11 @@ const formSchema = z.object({
     description: z.string().optional(),
 });
 
-export function CreateProjectDialog() {
+interface CreateProjectDialogProps {
+    trigger?: React.ReactNode;
+}
+
+export function CreateProjectDialog({ trigger }: CreateProjectDialogProps) {
     const [open, setOpen] = useState(false);
     const { mutate: createProject, isPending } = useCreateProject();
     const { register, handleSubmit, formState: { errors }, reset } = useForm<z.infer<typeof formSchema>>({
@@ -47,9 +51,11 @@ export function CreateProjectDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="uppercase tracking-widest text-xs">
-                    <Plus className="mr-2 h-4 w-4" /> New Project
-                </Button>
+                {trigger ? trigger : (
+                    <Button className="uppercase tracking-widest text-xs">
+                        <Plus className="mr-2 h-4 w-4" /> New Project
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] border-2 border-black p-0 overflow-hidden gap-0">
                 <DialogHeader className="bg-black text-white p-6 rounded-none">

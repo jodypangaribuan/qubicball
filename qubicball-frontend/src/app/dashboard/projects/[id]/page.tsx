@@ -1,26 +1,26 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, MoreVertical, Calendar, User, Circle, CheckCircle2, Clock, Trash2, Edit2 } from "lucide-react";
 import { useProject } from "@/hooks/use-projects";
-import { useTasks, useDeleteTask, useUpdateTask } from "@/hooks/use-tasks";
+import { useTasks } from "@/hooks/use-tasks";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { format } from "date-fns";
-import { Task } from "@/types";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { TaskList } from "@/components/tasks/task-list";
+import { useUser } from "@/hooks/use-auth";
+import { useDeleteProject } from "@/hooks/use-projects";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
-export default function ProjectDetailPage() {
+export default function ProjectDetailAndTasksPage() {
     const params = useParams();
-    const projectId = parseInt(params.id as string);
     const router = useRouter();
-
+    const projectId = parseInt(params.id as string);
     const { data: project, isLoading: isProjectLoading } = useProject(projectId);
     const { data: tasks, isLoading: isTasksLoading } = useTasks(projectId);
-    const { mutate: deleteTask } = useDeleteTask();
-    const { mutate: updateTask } = useUpdateTask();
+    const { data: user } = useUser();
+    const { mutate: deleteProject } = useDeleteProject();
 
     if (isProjectLoading) {
         return <div className="p-12 font-mono uppercase tracking-widest animate-pulse">Loading Project Specification...</div>;
@@ -30,26 +30,28 @@ export default function ProjectDetailPage() {
         return <div className="p-12 font-mono uppercase tracking-widest text-red-600">Project Not Found</div>;
     }
 
-    const handleDeleteTask = (taskId: number) => {
-        if (confirm("DELETE TASK IRREVERSIBLY?")) {
-            deleteTask({ id: taskId, projectId });
+    const handleDeleteProject = () => {
+        if (confirm("DELETE PROJECT? THIS ACTION CANNOT BE UNDONE.")) {
+            deleteProject(projectId, {
+                onSuccess: () => router.push("/dashboard")
+            });
         }
-    }
+    };
 
-    const handleStatusChange = (task: Task, newStatus: "todo" | "in_progress" | "done") => {
-        updateTask({
-            id: task.id,
-            data: { status: newStatus, project_id: projectId } as any // Type assertion for now if mismatch
-        });
-    }
-
-    // Filter functionality could go here
+    const canDeleteProject = user?.role === "admin";
 
     return (
         <div className="p-12 space-y-12 min-h-screen relative">
-            <Link href="/dashboard" className="inline-flex items-center text-xs font-mono uppercase tracking-widest hover:underline underline-offset-4 mb-4">
-                <ArrowLeft className="mr-2 h-3 w-3" /> Return to Index
-            </Link>
+            <div className="flex justify-between items-center mb-4">
+                <Link href="/dashboard" className="inline-flex items-center text-xs font-mono uppercase tracking-widest hover:underline underline-offset-4">
+                    <ArrowLeft className="mr-2 h-3 w-3" /> Return to Index
+                </Link>
+                {canDeleteProject && (
+                    <Button variant="destructive" size="sm" onClick={handleDeleteProject} className="uppercase font-mono text-xs">
+                        <Trash2 className="mr-2 h-3 w-3" /> Delete Project
+                    </Button>
+                )}
+            </div>
 
             <header className="border-b-4 border-black pb-8 space-y-4">
                 <div className="flex justify-between items-start">
@@ -92,79 +94,12 @@ export default function ProjectDetailPage() {
                     <p className="font-mono text-xs uppercase tracking-widest">{tasks?.length || 0} Records</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
-                    {isTasksLoading && <div className="font-mono text-xs uppercase animate-pulse">Loading Tasks...</div>}
-
-                    {!isTasksLoading && tasks && tasks.length === 0 && (
-                        <div className="py-20 text-center border border-dashed border-black/20">
-                            <p className="font-serif italic text-muted-foreground">No tasks recorded in this manifest.</p>
-                        </div>
-                    )}
-
-                    {!isTasksLoading && tasks && tasks.map(task => (
-                        <div key={task.id} className="group border border-black p-6 hover:bg-black hover:text-white transition-all duration-300 relative">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-2 max-w-3xl">
-                                    <div className="flex items-center gap-3">
-                                        <StatusIndicator status={task.status} />
-                                        <h3 className="text-xl font-bold font-display uppercase tracking-wider">{task.title}</h3>
-                                    </div>
-                                    <p className="font-serif text-sm group-hover:text-gray-300 transition-colors line-clamp-2">
-                                        {task.description}
-                                    </p>
-                                </div>
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 group-hover:text-white hover:bg-white/20">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="border-2 border-black rounded-none p-0">
-                                        <DropdownMenuItem className="rounded-none focus:bg-black focus:text-white font-mono uppercase text-xs p-3 cursor-pointer" onClick={() => handleStatusChange(task, 'todo')}>
-                                            Set Todo
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="rounded-none focus:bg-black focus:text-white font-mono uppercase text-xs p-3 cursor-pointer" onClick={() => handleStatusChange(task, 'in_progress')}>
-                                            Set In Progress
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="rounded-none focus:bg-black focus:text-white font-mono uppercase text-xs p-3 cursor-pointer" onClick={() => handleStatusChange(task, 'done')}>
-                                            Set Done
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="rounded-none focus:bg-red-600 focus:text-white font-mono uppercase text-xs p-3 cursor-pointer text-red-600" onClick={() => handleDeleteTask(task.id)}>
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-
-                            <div className="flex gap-6 mt-6 pt-4 border-t border-black/10 group-hover:border-white/20">
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="h-3 w-3" />
-                                    <span className="font-mono text-[10px] uppercase tracking-wider">
-                                        Due: {format(new Date(task.due_date), "MMM d")}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <User className="h-3 w-3" />
-                                    <span className="font-mono text-[10px] uppercase tracking-wider">
-                                        ID: {task.assignee_id}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {isTasksLoading ? (
+                    <div className="font-mono text-xs uppercase animate-pulse">Loading Tasks...</div>
+                ) : (
+                    <TaskList tasks={tasks || []} projectId={projectId} />
+                )}
             </section>
         </div>
     );
-}
-
-function StatusIndicator({ status }: { status: string }) {
-    if (status === "done") {
-        return <CheckCircle2 className="h-5 w-5 text-black group-hover:text-white" />;
-    }
-    if (status === "in_progress") {
-        return <Clock className="h-5 w-5 text-black group-hover:text-white animate-pulse" />;
-    }
-    return <Circle className="h-5 w-5 text-black group-hover:text-white" />;
 }

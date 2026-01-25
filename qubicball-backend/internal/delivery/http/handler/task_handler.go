@@ -65,3 +65,16 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Task deleted"})
 }
+func (h *TaskHandler) GetByAssigneeID(c *gin.Context) {
+	// Usually invalid param would be 0, or check error
+	assigneeID, _ := strconv.Atoi(c.Param("assignee_id"))
+	// If assignee_id is not passed in route, maybe from query or context (me)?
+	// Route will be /tasks/assignee/:assignee_id
+	tasks, err := h.TaskUsecase.GetByAssigneeID(c.Request.Context(), uint(assigneeID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tasks)
+}

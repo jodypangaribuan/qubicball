@@ -34,7 +34,7 @@ func (r *taskRepository) GetByProjectID(ctx context.Context, projectID uint) ([]
 }
 
 func (r *taskRepository) Update(ctx context.Context, task *domain.Task) error {
-	return r.db.WithContext(ctx).Save(task).Error
+	return r.db.WithContext(ctx).Model(task).Updates(task).Error
 }
 
 func (r *taskRepository) Delete(ctx context.Context, id uint) error {
@@ -45,5 +45,11 @@ func (r *taskRepository) GetOverdueTasks(ctx context.Context) ([]domain.Task, er
 	var tasks []domain.Task
 	now := time.Now()
 	err := r.db.WithContext(ctx).Where("due_date < ? AND status != ?", now, domain.TaskStatusCompleted).Find(&tasks).Error
+	return tasks, err
+}
+
+func (r *taskRepository) GetByAssigneeID(ctx context.Context, assigneeID uint) ([]domain.Task, error) {
+	var tasks []domain.Task
+	err := r.db.WithContext(ctx).Where("assignee_id = ?", assigneeID).Preload("Assignee").Find(&tasks).Error
 	return tasks, err
 }
