@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Source_Sans_3 } from "next/font/google";
+import { Playfair_Display, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import Providers from "./providers";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["600", "700"],
-  display: "swap",
 });
 
-const sourceSans = Source_Sans_3({
-  variable: "--font-source-sans",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Qubicball - Botanical Elegance",
-  description: "A digital ode to nature.",
+  title: "Qubicball | Minimalist Project Management",
+  description: "Austere, Authoritative, Timeless.",
 };
-
-import Providers from "./providers";
 
 export default function RootLayout({
   children,
@@ -31,10 +32,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${sourceSans.variable} antialiased bg-[#F9F8F4] text-[#2D3A31]`}
+        className={cn(
+          "min-h-screen bg-background font-serif antialiased",
+          playfair.variable,
+          sourceSerif.variable,
+          jetbrainsMono.variable,
+          sourceSerif.className
+        )}
       >
-        <div className="paper-texture" />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
