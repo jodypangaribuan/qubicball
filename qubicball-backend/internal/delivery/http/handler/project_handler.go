@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"qubicball-backend/internal/domain"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type ProjectHandler struct {
@@ -64,7 +66,11 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 	project.ID = uint(id)
 
 	if err := h.ProjectUsecase.Update(c.Request.Context(), &project); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Project modified by another user or not found. Please refresh and try again."})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

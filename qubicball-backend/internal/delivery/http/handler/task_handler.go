@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"qubicball-backend/internal/domain"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type TaskHandler struct {
@@ -49,7 +51,11 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	task.ID = uint(id)
 
 	if err := h.TaskUsecase.Update(c.Request.Context(), &task); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Task modified by another user or not found. Please refresh and try again."})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

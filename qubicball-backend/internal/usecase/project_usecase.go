@@ -79,7 +79,11 @@ func (u *projectUsecase) Update(c context.Context, project *domain.Project) erro
 	err := u.projectRepo.Update(ctx, project)
 	if err == nil {
 		u.redisClient.Del(ctx, fmt.Sprintf("project:%d", project.ID))
-		u.redisClient.Del(ctx, "projects")
+		u.redisClient.Del(ctx, "projects") // Matches the simple cache key in existing code? Wait, existing Create deleted "projects". GetAll doesn't seem to use "projects" key but "projects:page:size"?
+		// Looking at GetAll in original file: _ = fmt.Sprintf("projects:%d:%d", page, pageSize) line 67 was useless assignment.
+		// It comments "ignoring for simplicity".
+		// I should probably clear everything if possible or just accept that list might be stale.
+		// The original code `u.redisClient.Del(ctx, "projects")` suggests intent to clear list cache.
 	}
 	return err
 }

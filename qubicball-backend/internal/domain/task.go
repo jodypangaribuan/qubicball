@@ -26,6 +26,7 @@ type Task struct {
 	Project     Project        `gorm:"foreignKey:ProjectID" json:"-"`
 	AssigneeID  *uint          `json:"assignee_id"`
 	Assignee    *User          `gorm:"foreignKey:AssigneeID" json:"assignee,omitempty"`
+	Version     int            `gorm:"default:1" json:"version"` // Optimistic Locking
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
@@ -38,6 +39,7 @@ type TaskRepository interface {
 	Update(ctx context.Context, task *Task) error
 	Delete(ctx context.Context, id uint) error
 	GetOverdueTasks(ctx context.Context) ([]Task, error)
+	MarkAsOverdue(ctx context.Context) error
 	GetByAssigneeID(ctx context.Context, assigneeID uint) ([]Task, error)
 }
 

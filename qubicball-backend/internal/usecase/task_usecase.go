@@ -71,6 +71,10 @@ func (u *taskUsecase) Update(c context.Context, task *domain.Task) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
+	// Get current task to know ProjectID in case it changed (rare but possible) or for invalidation
+	// We might not need this if we trust input ProjectID. Assuming task exists.
+	// Actually repo update might fail if version mismatch.
+
 	err := u.taskRepo.Update(ctx, task)
 	if err == nil {
 		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", task.ProjectID))
@@ -98,21 +102,28 @@ func (u *taskUsecase) MarkOverdueTasks(c context.Context) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
+	// 1. Get potentially affecting projects for cache invalidation
+	// This is a "best effort" invalidation.
 	tasks, err := u.taskRepo.GetOverdueTasks(ctx)
 	if err != nil {
 		return err
 	}
 
+	projectIDs := make(map[uint]bool)
 	for _, task := range tasks {
-		task.Status = domain.TaskStatusOverdue
-		if err := u.taskRepo.Update(ctx, &task); err != nil {
-			// Log error but continue
-			fmt.Printf("Failed to update overdue task %d: %v\n", task.ID, err)
-			continue
-		}
-		// Invalidate cache for the project
-		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", task.ProjectID))
+		projectIDs[task.ProjectID] = true
 	}
+
+	// 2. Perform Atomic Update
+	if err := u.taskRepo.MarkAsOverdue(ctx); err != nil {
+		return err
+	}
+
+	// 3. Invalidate Caches
+	for projectID := range projectIDs {
+		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", projectID))
+	}
+
 	return nil
 }
 

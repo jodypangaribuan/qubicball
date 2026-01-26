@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"qubicball-backend/internal/domain"
 
@@ -33,7 +34,23 @@ func (r *projectRepository) GetAll(ctx context.Context, limit, offset int) ([]do
 }
 
 func (r *projectRepository) Update(ctx context.Context, project *domain.Project) error {
-	return r.db.WithContext(ctx).Model(project).Updates(project).Error
+	// Optimistic Locking: Check version
+	result := r.db.WithContext(ctx).Model(&domain.Project{}).
+		Where("id = ? AND version = ?", project.ID, project.Version).
+		Updates(map[string]interface{}{
+			"name":        project.Name,
+			"description": project.Description,
+			"version":     project.Version + 1,
+			"updated_at":  time.Now(),
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound // Or a custom ErrConcurrentUpdate
+	}
+	return nil
 }
 
 func (r *projectRepository) Delete(ctx context.Context, id uint) error {

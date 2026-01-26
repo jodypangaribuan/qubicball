@@ -34,7 +34,36 @@ func (r *taskRepository) GetByProjectID(ctx context.Context, projectID uint) ([]
 }
 
 func (r *taskRepository) Update(ctx context.Context, task *domain.Task) error {
-	return r.db.WithContext(ctx).Model(task).Updates(task).Error
+	// Optimistic Locking
+	result := r.db.WithContext(ctx).Model(&domain.Task{}).
+		Where("id = ? AND version = ?", task.ID, task.Version).
+		Updates(map[string]interface{}{
+			"title":       task.Title,
+			"description": task.Description,
+			"status":      task.Status,
+			"due_date":    task.DueDate,
+			"assignee_id": task.AssigneeID,
+			"version":     task.Version + 1,
+			"updated_at":  time.Now(),
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *taskRepository) MarkAsOverdue(ctx context.Context) error {
+	// Atomic Update for Scheduler
+	return r.db.WithContext(ctx).Model(&domain.Task{}).
+		Where("due_date < ? AND status != ? AND status != ?", time.Now(), domain.TaskStatusCompleted, domain.TaskStatusOverdue).
+		Updates(map[string]interface{}{
+			"status":     domain.TaskStatusOverdue,
+			"updated_at": time.Now(),
+		}).Error
 }
 
 func (r *taskRepository) Delete(ctx context.Context, id uint) error {

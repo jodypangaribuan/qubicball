@@ -13,6 +13,7 @@ type Project struct {
 	Description string         `json:"description"`
 	OwnerID     uint           `gorm:"not null" json:"owner_id"`
 	Owner       User           `gorm:"foreignKey:OwnerID" json:"owner"`
+	Version     int            `gorm:"default:1" json:"version"` // Optimistic Locking
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
