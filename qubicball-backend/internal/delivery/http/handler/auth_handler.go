@@ -56,13 +56,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := h.UserUsecase.Login(c.Request.Context(), request.Email, request.Password)
+	user, token, err := h.UserUsecase.Login(c.Request.Context(), request.Email, request.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user":  user,
+	})
 }
 
 func (h *AuthHandler) GetProfile(c *gin.Context) {

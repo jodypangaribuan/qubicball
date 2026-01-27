@@ -82,3 +82,9 @@ func (r *taskRepository) GetByAssigneeID(ctx context.Context, assigneeID uint) (
 	err := r.db.WithContext(ctx).Where("assignee_id = ?", assigneeID).Preload("Assignee").Find(&tasks).Error
 	return tasks, err
 }
+
+func (r *taskRepository) GetByProjectIDAndAssigneeID(ctx context.Context, projectID uint, assigneeID uint) ([]domain.Task, error) {
+	var tasks []domain.Task
+	err := r.db.WithContext(ctx).Where("project_id = ? AND assignee_id = ?", projectID, assigneeID).Preload("Assignee").Find(&tasks).Error
+	return tasks, err
+}

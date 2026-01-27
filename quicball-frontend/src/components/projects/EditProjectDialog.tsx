@@ -23,45 +23,54 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateProject } from '@/hooks/useProjects';
+import { useUpdateProject } from '@/hooks/useProjects';
+import { Project } from '@/types';
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
 const formSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     description: z.string().optional(),
 });
 
-export function CreateProjectDialog() {
+interface EditProjectDialogProps {
+    project: Project;
+}
+
+export function EditProjectDialog({ project }: EditProjectDialogProps) {
     const [open, setOpen] = useState(false);
-    const createProject = useCreateProject();
+    const updateProject = useUpdateProject();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: '',
-            description: '',
+            name: project.name,
+            description: project.description,
         },
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        await createProject.mutateAsync({
+        await updateProject.mutateAsync({
+            id: project.id,
             name: values.name,
             description: values.description || '',
+            version: project.version,
         });
         setOpen(false);
-        form.reset();
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create Project</Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                    <Pencil className="h-4 w-4" />
+                </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create Project</DialogTitle>
+                    <DialogTitle>Edit Project</DialogTitle>
                     <DialogDescription>
-                        Add a new project to your workspace.
+                        Update project details.
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -93,8 +102,8 @@ export function CreateProjectDialog() {
                             )}
                         />
                         <DialogFooter>
-                            <Button type="submit" disabled={createProject.isPending}>
-                                {createProject.isPending ? 'Creating...' : 'Create Project'}
+                            <Button type="submit" disabled={updateProject.isPending}>
+                                {updateProject.isPending ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </DialogFooter>
                     </form>

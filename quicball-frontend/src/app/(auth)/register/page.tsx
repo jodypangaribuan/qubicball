@@ -48,22 +48,30 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <Card className="w-[350px]">
-                <CardHeader>
-                    <CardTitle>Register</CardTitle>
+        <div className="flex items-center justify-center min-h-screen w-full bg-background p-6">
+            <Card className="w-full max-w-md border-thin shadow-sm rounded-none md:rounded-lg overflow-hidden">
+                <CardHeader className="text-center space-y-4 pt-12 pb-8">
+                    <div className="mx-auto bg-primary text-primary-foreground p-3 w-fit mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
+                    </div>
+                    <CardTitle className="text-4xl font-serif text-foreground">Join the Team</CardTitle>
+                    <p className="font-sans text-muted-foreground tracking-wide">Create your account to get started.</p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-8 pb-12">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Name</FormLabel>
+                                        <FormLabel className="small-caps text-muted-foreground">Full Name</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="John Doe" {...field} />
+                                            <Input
+                                                placeholder="John Doe"
+                                                {...field}
+                                                className="h-12 bg-transparent border-input rounded-md focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent transition-colors"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -74,9 +82,13 @@ export default function RegisterPage() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel className="small-caps text-muted-foreground">Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="email@example.com" {...field} />
+                                            <Input
+                                                placeholder="email@example.com"
+                                                {...field}
+                                                className="h-12 bg-transparent border-input rounded-md focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent transition-colors"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -87,16 +99,21 @@ export default function RegisterPage() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel className="small-caps text-muted-foreground">Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" {...field} />
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                {...field}
+                                                className="h-12 bg-transparent border-input rounded-md focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent transition-colors"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full">
-                                Register
+                            <Button type="submit" className="w-full h-12 text-base font-medium tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 transition-all rounded-md shadow-sm">
+                                Create Account
                             </Button>
                         </form>
                     </Form>

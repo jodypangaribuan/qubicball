@@ -15,7 +15,6 @@ export const useProjects = () => {
             // Usually standard handlers return { data: [...] } or just [...]. 
             // Assuming array for now, or I'll debug.
             // Actually standard Go Gin handlers often return JSON.
-            // Let's assume it returns `data` or the array.
             // I'll return `data` but cast it.
             return data;
         },
@@ -54,6 +53,30 @@ export const useDeleteProject = () => {
         onError: (error) => {
             toast.error('Failed to delete project');
             console.error(error);
+        },
+    });
+};
+
+export const useUpdateProject = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (project: { id: number; name: string; description: string; version: number }) => {
+            return api.put(`/projects/${project.id}`, project);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['project'] });
+            toast.success('Project updated');
+        },
+        onError: (error: any) => {
+            if (error.response?.status === 409) {
+                toast.error('Data conflict! Project modified by someone else. Reloading...');
+                queryClient.invalidateQueries({ queryKey: ['projects'] });
+                queryClient.invalidateQueries({ queryKey: ['project'] });
+            } else {
+                toast.error('Failed to update project');
+            }
         },
     });
 };

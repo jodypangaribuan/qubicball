@@ -46,28 +46,69 @@ export default function ProjectDetailsPage() {
     const completedTasks = tasks.filter(t => t.status === 'Completed');
 
     return (
-        <div className="container mx-auto py-10 px-4">
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold">{project.name}</h1>
-                    <p className="text-gray-500 mt-2">{project.description}</p>
+        <div className="min-h-screen bg-gray-50/50 pb-20">
+            {/* Header */}
+            <div className="bg-white border-b shadow-sm">
+                <div className="container mx-auto py-8 px-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                <a href="/dashboard" className="hover:text-gray-900 hover:underline">Projects</a>
+                                <span>/</span>
+                                <span>{project.name}</span>
+                            </div>
+                            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">{project.name}</h1>
+                            <p className="text-gray-500 mt-2 max-w-2xl">{project.description}</p>
+                        </div>
+                        <CreateTaskDialog projectId={id} />
+                    </div>
                 </div>
-                <CreateTaskDialog projectId={id} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Kanban Columns */}
-                <div className="bg-gray-50/50 p-4 rounded-lg border">
-                    <h3 className="font-semibold mb-4 text-gray-700">To Do ({todoTasks.length})</h3>
-                    {todoTasks.map(task => <TaskCard key={task.id} task={task} />)}
-                </div>
-                <div className="bg-blue-50/30 p-4 rounded-lg border border-blue-100">
-                    <h3 className="font-semibold mb-4 text-blue-700">In Progress ({inProgressTasks.length})</h3>
-                    {inProgressTasks.map(task => <TaskCard key={task.id} task={task} />)}
-                </div>
-                <div className="bg-green-50/30 p-4 rounded-lg border border-green-100">
-                    <h3 className="font-semibold mb-4 text-green-700">Completed ({completedTasks.length})</h3>
-                    {completedTasks.map(task => <TaskCard key={task.id} task={task} />)}
+            <div className="container mx-auto py-10 px-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Kanban Columns */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg border border-gray-200">
+                            <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                                To Do
+                            </h3>
+                            <span className="bg-white px-2 py-0.5 rounded text-xs font-semibold text-gray-600 shadow-sm">{todoTasks.length}</span>
+                        </div>
+                        <div className="space-y-3">
+                            {todoTasks.map(task => <TaskCard key={task.id} task={task} />)}
+                            {todoTasks.length === 0 && <div className="text-center py-8 text-gray-400 text-sm italic border border-dashed rounded-lg">No tasks</div>}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <h3 className="font-semibold text-blue-700 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                In Progress
+                            </h3>
+                            <span className="bg-white px-2 py-0.5 rounded text-xs font-semibold text-blue-600 shadow-sm">{inProgressTasks.length}</span>
+                        </div>
+                        <div className="space-y-3">
+                            {inProgressTasks.map(task => <TaskCard key={task.id} task={task} />)}
+                            {inProgressTasks.length === 0 && <div className="text-center py-8 text-gray-400 text-sm italic border border-dashed rounded-lg">No tasks</div>}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100">
+                            <h3 className="font-semibold text-green-700 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                Completed
+                            </h3>
+                            <span className="bg-white px-2 py-0.5 rounded text-xs font-semibold text-green-600 shadow-sm">{completedTasks.length}</span>
+                        </div>
+                        <div className="space-y-3">
+                            {completedTasks.map(task => <TaskCard key={task.id} task={task} />)}
+                            {completedTasks.length === 0 && <div className="text-center py-8 text-gray-400 text-sm italic border border-dashed rounded-lg">No tasks</div>}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

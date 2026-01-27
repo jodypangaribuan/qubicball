@@ -71,13 +71,49 @@ func (u *taskUsecase) Update(c context.Context, task *domain.Task) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	// Get current task to know ProjectID in case it changed (rare but possible) or for invalidation
-	// We might not need this if we trust input ProjectID. Assuming task exists.
-	// Actually repo update might fail if version mismatch.
+	// 1. Fetch existing task
+	existingTask, err := u.taskRepo.GetByID(ctx, task.ID)
+	if err != nil {
+		return err
+	}
 
-	err := u.taskRepo.Update(ctx, task)
+	// 2. Merge changes (only update non-zero or specific fields)
+	// Since we are handling a PATCH-like behavior but receiving a struct,
+	// we need to be careful. However, based on the issue "title/desc missing",
+	// it seems the incoming task has empty title/desc.
+
+	// We update fields if they are provided.
+	// Note: This logic assumes that empty string means "do not update",
+	// preventing the user from actually clearing the title/desc.
+	// But title is required usually. Description might be optional.
+
+	if task.Title != "" {
+		existingTask.Title = task.Title
+	}
+	if task.Description != "" {
+		existingTask.Description = task.Description
+	}
+	if task.Status != "" {
+		existingTask.Status = task.Status
+	}
+	if !task.DueDate.IsZero() {
+		existingTask.DueDate = task.DueDate
+	}
+	if task.AssigneeID != nil {
+		existingTask.AssigneeID = task.AssigneeID
+	}
+	// Update version for optimistic locking
+	existingTask.Version = task.Version
+
+	err = u.taskRepo.Update(ctx, existingTask)
 	if err == nil {
-		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", task.ProjectID))
+		u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", existingTask.ProjectID))
+		// If the project ID changed (unlikely in this app flow but possible), invalidate old one too
+		if existingTask.ProjectID != task.ProjectID && task.ProjectID != 0 {
+			u.redisClient.Del(ctx, fmt.Sprintf("tasks:project:%d", task.ProjectID))
+		}
+		// Update the pointer so the handler gets the updated data back
+		*task = *existingTask
 	}
 	return err
 }
@@ -132,4 +168,14 @@ func (u *taskUsecase) GetByAssigneeID(c context.Context, assigneeID uint) ([]dom
 	defer cancel()
 
 	return u.taskRepo.GetByAssigneeID(ctx, assigneeID)
+}
+
+func (u *taskUsecase) GetByProjectIDAndAssigneeID(c context.Context, projectID uint, assigneeID uint) ([]domain.Task, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	// Invalidate Project Cache? No, this is a read.
+	// Cache can be tricky here. For now, bypass cache or use specific key.
+	// Given the specific requirement, fetching from DB is safer to ensure privacy.
+	return u.taskRepo.GetByProjectIDAndAssigneeID(ctx, projectID, assigneeID)
 }

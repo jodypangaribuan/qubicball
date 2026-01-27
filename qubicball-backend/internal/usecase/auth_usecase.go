@@ -50,20 +50,20 @@ func (u *authUsecase) Register(c context.Context, user *domain.User) error {
 	return u.userRepo.Create(ctx, user)
 }
 
-func (u *authUsecase) Login(c context.Context, email, password string) (string, error) {
+func (u *authUsecase) Login(c context.Context, email, password string) (*domain.User, string, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
 	user, err := u.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		log.Printf("Login check: User not found for email %s: %v\n", email, err)
-		return "", errors.New("invalid email or password")
+		return nil, "", errors.New("invalid email or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		log.Printf("Login check: Password mismatch for user %s. Stored: %s, Input: %s. Error: %v\n", email, user.Password, password, err)
-		return "", errors.New("invalid email or password")
+		return nil, "", errors.New("invalid email or password")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -75,10 +75,10 @@ func (u *authUsecase) Login(c context.Context, email, password string) (string, 
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
-	return tokenString, nil
+	return user, tokenString, nil
 }
 
 func (u *authUsecase) GetProfile(c context.Context, id uint) (*domain.User, error) {

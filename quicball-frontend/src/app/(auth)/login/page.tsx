@@ -39,30 +39,7 @@ export default function LoginPage() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             const response = await api.post('/auth/login', values);
-            const { token, user } = response.data; // Assuming backend returns { token, user } or similar, need to verify
-            // Actually backend response from authHandler.Login usually returns just token or object.
-            // Let's assume decoding or separate profile fetch. 
-            // For now, let's assume we get the token, and we might need to fetch profile.
-            // If backend only returns token:
-            if (typeof response.data === 'string') {
-                // If response.data is just the token string
-                const token = response.data;
-                // We might need to fetch profile
-                // Use the token to get profile
-                // Manually set payload for now if needed or fetch
-                // For this step I will assume standard JWT response structure or adapt.
-            }
-
-            // Let's look at router.go: authHandler.Login
-            // Usually returns JSON with token.
-
-            // If we don't know the exact structure, let's implement a fetchProfile
-            // For now, let's just save token and redirect, and fetch profile in layout or a guard.
-            // But store needs user.
-
-            // Let's assume for now:
             setAuth(response.data.token, response.data.user);
-
             toast.success('Login successful');
             router.push('/dashboard');
         } catch (error) {
@@ -72,47 +49,60 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <Card className="w-[350px]">
-                <CardHeader>
-                    <CardTitle>Login</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Email</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="email@example.com" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Password</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full">
-                                Login
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+        <div className="flex items-center justify-center min-h-screen w-full bg-background p-4">
+            <div className="w-full max-w-sm">
+                <div className="flex flex-col text-center space-y-2 mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Enter your email below to login to your account
+                    </p>
+                </div>
+
+                <Card className="border-border/50 shadow-sm">
+                    <CardContent className="pt-6">
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Email</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="name@example.com"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Password</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="••••••••"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" className="w-full">
+                                    Sign In
+                                </Button>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }

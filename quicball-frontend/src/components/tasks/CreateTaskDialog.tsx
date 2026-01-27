@@ -137,7 +137,7 @@ export function CreateTaskDialog({ projectId }: { projectId: number }) {
                             )}
                         />
                         <Button type="submit" disabled={createTask.isPending}>
-                            Create
+                            {createTask.isPending ? 'Creating...' : 'Create Task'}
                         </Button>
                     </form>
                 </Form>
