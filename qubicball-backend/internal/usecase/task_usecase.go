@@ -78,15 +78,6 @@ func (u *taskUsecase) Update(c context.Context, task *domain.Task) error {
 	}
 
 	// 2. Merge changes (only update non-zero or specific fields)
-	// Since we are handling a PATCH-like behavior but receiving a struct,
-	// we need to be careful. However, based on the issue "title/desc missing",
-	// it seems the incoming task has empty title/desc.
-
-	// We update fields if they are provided.
-	// Note: This logic assumes that empty string means "do not update",
-	// preventing the user from actually clearing the title/desc.
-	// But title is required usually. Description might be optional.
-
 	if task.Title != "" {
 		existingTask.Title = task.Title
 	}
@@ -96,6 +87,7 @@ func (u *taskUsecase) Update(c context.Context, task *domain.Task) error {
 	if task.Status != "" {
 		existingTask.Status = task.Status
 	}
+	// Check if DueDate is not zero time
 	if !task.DueDate.IsZero() {
 		existingTask.DueDate = task.DueDate
 	}
