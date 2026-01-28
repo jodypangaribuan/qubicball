@@ -14,7 +14,11 @@ The backend service for Qubicball, a task management application. This service i
 
 ## Configuration
 
-The application uses environment variables for configuration. Copy the example `.env` file (if provided) or create a `.env` file in the root of the backend directory with the following variables:
+The application uses environment variables for configuration. Copy the example `.env` file to create a local configuration:
+```bash
+cp .env.example .env
+```
+Or create a `.env` file in the root of the backend directory with the following variables:
 
 ```env
 # Server

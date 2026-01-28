@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // Adjust if backend runs on different port
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api', // Adjust if backend runs on different port
   headers: {
     'Content-Type': 'application/json',
   },

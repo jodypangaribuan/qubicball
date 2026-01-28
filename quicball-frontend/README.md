@@ -12,6 +12,18 @@ The frontend application for Qubicball, built with Next.js 16 and a modern, resp
 - **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide React](https://lucide.dev/) (Icons)
 - **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) validation
 
+## Configuration
+
+Copy the example environment file to create a local configuration:
+
+```bash
+cp .env.example .env.local
+```
+
+The following environment variables are available:
+
+- `NEXT_PUBLIC_API_URL`: The URL of the backend API (default: `http://localhost:8080/api`)
+
 ## Getting Started
 
 ### Prerequisites
